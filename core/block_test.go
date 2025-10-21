@@ -9,10 +9,10 @@ import (
 	"github.com/tmolyakov/projectx/types"
 )
 
-func randomBlock(height uint32) *Block {
+func randomBlock(height uint32, prevBlockHash types.Hash) *Block {
 	header := &Header{
 		Version:       1,
-		PrevBlockHash: types.RandomHash(),
+		PrevBlockHash: prevBlockHash,
 		Height:        height,
 		Timestamp:     uint64(time.Now().UnixNano()),
 	}
@@ -23,8 +23,8 @@ func randomBlock(height uint32) *Block {
 	return NewBlock(header, []Transaction{tx})
 }
 
-func randomBlockWithSignature(t *testing.T, height uint32) *Block {
-	block := randomBlock(height)
+func randomBlockWithSignature(t *testing.T, height uint32, prevBlockHash types.Hash) *Block {
+	block := randomBlock(height, prevBlockHash)
 	privKey := crypto.GeneratePrivateKey()
 	assert.Nil(t, block.Sign(privKey))
 
@@ -33,7 +33,7 @@ func randomBlockWithSignature(t *testing.T, height uint32) *Block {
 
 func TestSignBlock(t *testing.T) {
 	privKey := crypto.GeneratePrivateKey()
-	block := randomBlock(0)
+	block := randomBlock(0, types.Hash{})
 
 	assert.Nil(t, block.Sign(privKey))
 	assert.NotNil(t, block.Signature)
@@ -41,7 +41,7 @@ func TestSignBlock(t *testing.T) {
 
 func TestVerifyBlock(t *testing.T) {
 	privKey := crypto.GeneratePrivateKey()
-	block := randomBlock(0)
+	block := randomBlock(0, types.Hash{})
 
 	assert.Nil(t, block.Sign(privKey))
 	assert.Nil(t, block.Verify())
