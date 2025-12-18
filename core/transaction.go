@@ -9,8 +9,8 @@ import (
 type Transaction struct {
 	Data []byte
 
-	PublickKey crypto.PublicKey
-	Signature  *crypto.Signature
+	From      crypto.PublicKey
+	Signature *crypto.Signature
 }
 
 func (tx *Transaction) Sign(privKey crypto.PrivateKey) error {
@@ -19,7 +19,7 @@ func (tx *Transaction) Sign(privKey crypto.PrivateKey) error {
 		return err
 	}
 
-	tx.PublickKey = privKey.PublicKey()
+	tx.From = privKey.PublicKey()
 	tx.Signature = sig
 
 	return nil
@@ -30,7 +30,7 @@ func (tx *Transaction) Verify() error {
 		return fmt.Errorf("signature is nil")
 	}
 
-	if !tx.Signature.Verify(tx.PublickKey, tx.Data) {
+	if !tx.Signature.Verify(tx.From, tx.Data) {
 		return fmt.Errorf("signature verification failed")
 	}
 

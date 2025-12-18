@@ -9,28 +9,6 @@ import (
 	"github.com/tmolyakov/projectx/types"
 )
 
-func randomBlock(height uint32, prevBlockHash types.Hash) *Block {
-	header := &Header{
-		Version:       1,
-		PrevBlockHash: prevBlockHash,
-		Height:        height,
-		Timestamp:     uint64(time.Now().UnixNano()),
-	}
-	tx := Transaction{
-		Data: []byte("foo"),
-	}
-
-	return NewBlock(header, []Transaction{tx})
-}
-
-func randomBlockWithSignature(t *testing.T, height uint32, prevBlockHash types.Hash) *Block {
-	block := randomBlock(height, prevBlockHash)
-	privKey := crypto.GeneratePrivateKey()
-	assert.Nil(t, block.Sign(privKey))
-
-	return block
-}
-
 func TestSignBlock(t *testing.T) {
 	privKey := crypto.GeneratePrivateKey()
 	block := randomBlock(0, types.Hash{})
@@ -49,4 +27,25 @@ func TestVerifyBlock(t *testing.T) {
 	otherPrivKey := crypto.GeneratePrivateKey()
 	block.Validator = otherPrivKey.PublicKey()
 	assert.NotNil(t, block.Verify())
+}
+
+func randomBlock(height uint32, prevBlockHash types.Hash) *Block {
+	header := &Header{
+		Version:       1,
+		PrevBlockHash: prevBlockHash,
+		Height:        height,
+		Timestamp:     uint64(time.Now().UnixNano()),
+	}
+
+	return NewBlock(header, []Transaction{})
+}
+
+func randomBlockWithSignature(t *testing.T, height uint32, prevBlockHash types.Hash) *Block {
+	block := randomBlock(height, prevBlockHash)
+	privKey := crypto.GeneratePrivateKey()
+	tx := randomTxWithSignature(t)
+	block.AddTransaction(tx)
+	assert.Nil(t, block.Sign(privKey))
+
+	return block
 }
